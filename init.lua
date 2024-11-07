@@ -63,7 +63,7 @@ vim.cmd("highlight SignColumn guibg=NONE ctermbg=NONE")
 vim.cmd("highlight EndOfBuffer guibg=NONE ctermbg=NONE")
 
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = {"go", "odin", "c", "cpp", "lua", "javascript"}, -- Add other languages as needed
+  ensure_installed = {"go", "odin", "c", "cpp", "lua", "javascript"},
   highlight = {
     enable = true,
     additional_vim_regex_highlighting = false,
