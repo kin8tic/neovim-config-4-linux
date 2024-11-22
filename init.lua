@@ -1,36 +1,39 @@
-
 require("osagie.core.options")
 
-
-local install_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-  vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-  vim.cmd [[packadd packer.nvim]]
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if vim.fn.isdirectory(lazypath) == 0 then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
 end
 
+vim.opt.rtp:prepend(lazypath)
 
-require('packer').startup(function(use)
-  use 'wbthomason/packer.nvim' 
-  use {
-    'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate'
-  }
-  use 'neovim/nvim-lspconfig' 
-  use 'hrsh7th/nvim-cmp'
-  use 'hrsh7th/cmp-nvim-lsp'
-  use 'hrsh7th/cmp-buffer' 
-  use 'hrsh7th/cmp-path' 
-  use 'hrsh7th/cmp-cmdline'
-  use 'L3MON4D3/LuaSnip' 
-  use 'saadparwaiz1/cmp_luasnip' 
-  use {
-    'xiyaowong/nvim-transparent', 
+require("lazy").setup({
+  { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
+  { 'neovim/nvim-lspconfig' },
+  { 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-nvim-lsp' },
+  { 'hrsh7th/cmp-buffer' },
+  { 'hrsh7th/cmp-path' },
+  { 'hrsh7th/cmp-cmdline' },
+  { 'L3MON4D3/LuaSnip' },
+  { 'saadparwaiz1/cmp_luasnip' },
+  { 'mbbill/undotree' },
+
+  {
+    "xiyaowong/nvim-transparent",
     config = function()
       require('transparent').setup({
-        enable = true, 
-        extra_groups = { 
+        enable = true,
+        extra_groups = {
           'NormalFloat',
-          'NvimTreeNormal', 
+          'NvimTreeNormal',
           'Normal',
           'EndOfBuffer',
           'LineNr',
@@ -42,61 +45,110 @@ require('packer').startup(function(use)
         exclude = {},
       })
     end
-  }
-  use {
-    'ellisonleao/gruvbox.nvim',
-    requires = { 'rktjmp/lush.nvim' } 
-  }
-end)
+  },
 
-vim.g.gruvbox_transparent_bg = true
-vim.cmd [[
-  augroup load_colorscheme
-    autocmd!
-    autocmd User PackerComplete ++once lua vim.cmd("colorscheme gruvbox")
-  augroup end
-]]
+  {
+    "ellisonleao/gruvbox.nvim",
+    dependencies = { "rktjmp/lush.nvim" },
+    config = function()
+      vim.g.gruvbox_transparent_bg = true
+      vim.cmd("colorscheme gruvbox")
+      vim.cmd([[
+        highlight Normal guibg=NONE ctermbg=NONE
+        highlight LineNr guibg=NONE ctermbg=NONE
+        highlight SignColumn guibg=NONE ctermbg=NONE
+        highlight EndOfBuffer guibg=NONE ctermbg=NONE
+      ]])
+    end
+  },
 
-vim.cmd("highlight Normal guibg=NONE ctermbg=NONE")
-vim.cmd("highlight LineNr guibg=NONE ctermbg=NONE")
-vim.cmd("highlight SignColumn guibg=NONE ctermbg=NONE")
-vim.cmd("highlight EndOfBuffer guibg=NONE ctermbg=NONE")
+  {
+    "glepnir/lspsaga.nvim",
+    branch = "main",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require("lspsaga").setup({
+        ui = {
+          hover = { border = "rounded" },
+        },
+        lightbulb = {
+          enable = false,
+          sign = false,
+          virtual_text = false,
+        },
+      })
+    end
+  },
+
+  -- Telescope and FZF
+  {
+    'nvim-telescope/telescope.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+  },
+  {
+    'nvim-telescope/telescope-fzf-native.nvim',
+    build = 'make', -- Requires `make`
+  },
+})
 
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = {"go", "odin", "c", "cpp", "lua", "javascript"},
+  ensure_installed = {"odin", "c", "cpp", "lua", "javascript"},
   highlight = {
     enable = true,
     additional_vim_regex_highlighting = false,
   },
 }
 
-local lspconfig = require'lspconfig'
+-- Telescope configuration
+local telescope = require('telescope')
 
-local on_attach = function(client, bufnr)
-  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-  local opts = { noremap=true, silent=true }
-
-buf_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-buf_set_keymap('n', '<space>e', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
-buf_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
-buf_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
-buf_set_keymap('n', '<space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
-buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting_sync()<CR>', opts)
-end
-
-lspconfig.gopls.setup{
-  on_attach = on_attach,
-  settings = {
-    gopls = {
-      gofumpt = true,
+telescope.setup({
+  defaults = {
+    file_ignore_patterns = { "node_modules", ".git" },
+    vimgrep_arguments = {
+      'rg',
+      '--color=never',
+      '--no-heading',
+      '--with-filename',
+      '--line-number',
+      '--column',
+      '--smart-case'
     },
   },
-}
+  extensions = {
+    fzf = {
+      fuzzy = true,
+      override_generic_sorter = true,
+      override_file_sorter = true,
+      case_mode = "smart_case",
+    },
+  },
+})
+
+telescope.load_extension('fzf')
+
+local builtin = require('telescope.builtin')
+vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = "Find files" })
+vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = "Live grep" })
+vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = "Find buffers" })
+vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = "Find help tags" })
+
+local lspconfig = require'lspconfig'
+local on_attach = function(client, bufnr)
+  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+  local opts = { noremap = true, silent = true }
+  buf_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+  buf_set_keymap('n', 'K', '<cmd>Lspsaga hover_doc<CR>', opts)
+  buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+  buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+  buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+  buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+  buf_set_keymap('n', '<space>e', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
+  buf_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
+  buf_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
+  buf_set_keymap('n', '<space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
+  buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting_sync()<CR>', opts)
+end
 
 lspconfig.ols.setup({
   cmd = {"C:\\ols\\ols.exe"}
@@ -108,22 +160,21 @@ lspconfig.clangd.setup{
 
 lspconfig.lua_ls.setup {
   on_attach = on_attach,
+  cmd = { "C:/lua-language-server/bin/lua-language-server.exe" },
   settings = {
     Lua = {
       runtime = {
         version = 'LuaJIT',
-        path = vim.split(package.path, ';')
+        path = vim.split(package.path, ';'),
       },
       diagnostics = {
-        globals = {'vim'}
+        globals = { 'vim' },
       },
       workspace = {
-        library = vim.api.nvim_get_runtime_file("", true),
-        maxPreload = 2000,
-        preloadFileSize = 1000,
-      },
-      telemetry = {
-        enable = false,
+        library = {
+          [vim.fn.expand('$VIMRUNTIME/lua')] = true,
+          [vim.fn.stdpath('config') .. '/lua'] = true,
+        },
       },
     },
   },
@@ -133,6 +184,7 @@ lspconfig.ts_ls.setup{
   on_attach = on_attach,
 }
 
+-- CMP Configuration
 local cmp = require'cmp'
 local luasnip = require'luasnip'
 
@@ -178,4 +230,6 @@ cmp.setup({
 })
 
 vim.o.completeopt = 'menuone,noselect'
+
+vim.cmd [[command! TrimTrailingSpaces %s/\s\+$//e]]
 
