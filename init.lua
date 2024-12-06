@@ -27,27 +27,6 @@ require("lazy").setup({
   { 'mbbill/undotree' },
 
   {
-    "xiyaowong/nvim-transparent",
-    config = function()
-      require('transparent').setup({
-        enable = true,
-        extra_groups = {
-          'NormalFloat',
-          'NvimTreeNormal',
-          'Normal',
-          'EndOfBuffer',
-          'LineNr',
-          'CursorLineNr',
-          'SignColumn',
-          'StatusLine',
-          'StatusLineNC'
-        },
-        exclude = {},
-      })
-    end
-  },
-
-  {
     "ellisonleao/gruvbox.nvim",
     dependencies = { "rktjmp/lush.nvim" },
     config = function()
