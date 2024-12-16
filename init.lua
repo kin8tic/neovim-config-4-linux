@@ -130,7 +130,6 @@ local on_attach = function(client, bufnr)
 end
 
 lspconfig.ols.setup({
-  cmd = {"C:\\ols\\ols.exe"}
 })
 
 lspconfig.clangd.setup{
@@ -139,7 +138,7 @@ lspconfig.clangd.setup{
 
 lspconfig.lua_ls.setup {
   on_attach = on_attach,
-  cmd = { "C:/lua-language-server/bin/lua-language-server.exe" },
+  cmd = { "lua-language-server" },
   settings = {
     Lua = {
       runtime = {
